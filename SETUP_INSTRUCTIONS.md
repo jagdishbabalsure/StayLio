@@ -2,7 +2,7 @@
 
 ## 📋 Prerequisites
 
-Before setting up StayLio, ensure you have:
+Before setting up StayLio , ensure you have:
 
 - **Node.js 16+** - [Download](https://nodejs.org/)
 - **Java 17+** - [Download OpenJDK](https://openjdk.org/projects/jdk/17/)
