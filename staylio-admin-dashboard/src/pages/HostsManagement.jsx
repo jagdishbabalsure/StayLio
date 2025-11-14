@@ -28,6 +28,7 @@ const HostsManagement = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedHost, setSelectedHost] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     fetchHosts();
@@ -41,10 +42,24 @@ const HostsManagement = () => {
     try {
       setLoading(true);
       const response = await hostAPI.getAllHosts();
+      console.log('Hosts response:', response);
       setHosts(response.data || []);
     } catch (error) {
       console.error('Error fetching hosts:', error);
-      setHosts([]);
+      if (error.response?.status === 404) {
+        console.log('Hosts endpoint not found, trying alternative endpoint...');
+        // Try alternative endpoint if admin endpoint doesn't exist
+        try {
+          const altResponse = await fetch('http://localhost:8081/api/hosts');
+          const altData = await altResponse.json();
+          setHosts(Array.isArray(altData) ? altData : []);
+        } catch (altError) {
+          console.error('Alternative endpoint also failed:', altError);
+          setHosts([]);
+        }
+      } else {
+        setHosts([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -163,6 +178,14 @@ const HostsManagement = () => {
           <span>Add Host</span>
         </button>
       </div>
+
+      {/* Success Message */}
+      {successMessage && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center space-x-2">
+          <Check className="h-5 w-5 text-green-500" />
+          <span className="text-sm text-green-700">{successMessage}</span>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="card">

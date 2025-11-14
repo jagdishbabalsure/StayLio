@@ -12,13 +12,22 @@ public class User {
     private Long id;
     
     @Column(nullable = false)
-    private String name;
+    private String firstName;
+    
+    @Column(nullable = false)
+    private String lastName;
     
     @Column(nullable = false, unique = true)
     private String email;
     
     @Column(nullable = false)
+    private String password;
+    
+    @Column(nullable = false)
     private String phone;
+    
+    @Column(nullable = true)
+    private String name;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -32,11 +41,14 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
     
-    public User(String name, String email, String phone) {
+    public User(String firstName, String lastName, String email, String password, String phone) {
         this();
-        this.name = name;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
+        this.password = password;
         this.phone = phone;
+        this.name = firstName + " " + lastName; // Auto-populate name field
     }
     
     // Getters and Setters
@@ -48,12 +60,24 @@ public class User {
         this.id = id;
     }
     
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
     
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+    
+    public String getLastName() {
+        return lastName;
+    }
+    
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    
+    public String getFullName() {
+        return firstName + " " + lastName;
     }
     
     public String getEmail() {
@@ -64,12 +88,28 @@ public class User {
         this.email = email;
     }
     
+    public String getPassword() {
+        return password;
+    }
+    
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    
     public String getPhone() {
         return phone;
     }
     
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
     
     public LocalDateTime getCreatedAt() {

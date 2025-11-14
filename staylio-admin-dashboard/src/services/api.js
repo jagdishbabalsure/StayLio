@@ -55,6 +55,15 @@ export const hostAPI = {
   // Reject host (admin)
   rejectHost: (id, reason) => api.put(`/admin/hosts/${id}/reject`, { reason }),
   
+  // Create new host (admin)
+  createHost: (hostData) => api.post('/hosts', hostData),
+  
+  // Update host (admin)
+  updateHost: (id, hostData) => api.put(`/hosts/${id}`, hostData),
+  
+  // Delete host (admin)
+  deleteHost: (id) => api.delete(`/hosts/${id}`),
+  
   // Host profile endpoints
   getHostProfile: (id) => api.get(`/host/profile/${id}`),
   updateHostProfile: (id, hostData) => api.put(`/host/profile/${id}`, hostData),

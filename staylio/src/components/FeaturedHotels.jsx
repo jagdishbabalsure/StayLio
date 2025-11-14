@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { getFeaturedHotels } from '../data/hotels';
 import hotelService from '../services/hotelService';
 import { useError } from '../contexts/ErrorContext';
 import ConnectionError from './ConnectionError';
 import ApiErrorToast from './ApiErrorToast';
+import BookingModal from './BookingModal';
 
 const FeaturedHotels = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSearchResults, setIsSearchResults] = useState(false);
   const [searchParams, setSearchParams] = useState(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedHotel, setSelectedHotel] = useState(null);
 
   useEffect(() => {
     const loadHotels = async () => {
@@ -70,6 +75,31 @@ const FeaturedHotels = () => {
       window.removeEventListener('hotelSearchCompleted', handleSearchCompleted);
     };
   }, []);
+
+  const handleBooking = (hotel) => {
+    if (!isAuthenticated) {
+      // Show login prompt for unauthenticated users
+      const shouldLogin = window.confirm(
+        `🔐 Login Required\n\n` +
+        `You need to be logged in to book ${hotel.name}.\n\n` +
+        `Would you like to go to the login page?`
+      );
+      
+      if (shouldLogin) {
+        navigate('/login');
+      }
+      return;
+    }
+
+    // User is authenticated, open booking modal
+    setSelectedHotel(hotel);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleBookingModalClose = () => {
+    setIsBookingModalOpen(false);
+    setSelectedHotel(null);
+  };
 
   const clearSearch = async () => {
     localStorage.removeItem('searchResults');
@@ -289,16 +319,28 @@ const FeaturedHotels = () => {
                     </div>
 
                     <button
-                      onClick={() => {
-                        // For demo purposes, show booking confirmation
-                        const confirmed = window.confirm(`Book ${hotel.name} for ₹${hotel.price}/night?\n\nThis is a demo. In a real application, this would redirect to a booking page.`);
-                        if (confirmed) {
-                          alert('Booking confirmed! You will receive a confirmation email shortly.');
-                        }
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg cursor-pointer btn-hover-effect"
+                      onClick={() => handleBooking(hotel)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg cursor-pointer btn-hover-effect ${
+                        isAuthenticated 
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-300'
+                      }`}
                     >
-                      Book Now
+                      {isAuthenticated ? (
+                        <div className="flex items-center space-x-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0V6a2 2 0 012-2h4a2 2 0 012 2v1M8 7h8m-9 4v8a2 2 0 002 2h8a2 2 0 002-2v-8M9 11h6" />
+                          </svg>
+                          <span>Book Now</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                          <span>Login to Book</span>
+                        </div>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -317,6 +359,13 @@ const FeaturedHotels = () => {
           </button>
         </div>
       </div>
+
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={handleBookingModalClose}
+        hotel={selectedHotel}
+      />
     </section>
   );
 };

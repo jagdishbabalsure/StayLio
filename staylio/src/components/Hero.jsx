@@ -20,34 +20,34 @@ const Hero = () => {
     e.preventDefault();
 
     // Validate search data
-    if (!searchData.destination.trim()) {
+    if (!searchData.location.trim()) {
       alert('Please enter a destination');
       return;
     }
 
-    if (!searchData.checkIn || !searchData.checkOut) {
+    if (!searchData.checkin || !searchData.checkout) {
       alert('Please select check-in and check-out dates');
       return;
     }
 
     // Check if check-out is after check-in
-    if (new Date(searchData.checkOut) <= new Date(searchData.checkIn)) {
+    if (new Date(searchData.checkout) <= new Date(searchData.checkin)) {
       alert('Check-out date must be after check-in date');
       return;
     }
 
     try {
       // Show search confirmation
-      const searchSummary = `Searching for hotels in ${searchData.destination}\nCheck-in: ${searchData.checkIn}\nCheck-out: ${searchData.checkOut}\nGuests: ${searchData.guests}`;
+      const searchSummary = `Searching for hotels in ${searchData.location}\nCheck-in: ${searchData.checkin}\nCheck-out: ${searchData.checkout}\nGuests: ${searchData.guests}`;
       alert(`Search initiated!\n\n${searchSummary}\n\nSearching available hotels...`);
 
       // Prepare search parameters for API
       const searchParams = {
-        destination: searchData.destination,
-        checkIn: searchData.checkIn,
-        checkOut: searchData.checkOut,
+        destination: searchData.location,
+        checkIn: searchData.checkin,
+        checkOut: searchData.checkout,
         guests: searchData.guests,
-        city: searchData.destination // API might expect city parameter
+        city: searchData.location // API might expect city parameter
       };
 
       console.log('Search parameters:', searchParams);

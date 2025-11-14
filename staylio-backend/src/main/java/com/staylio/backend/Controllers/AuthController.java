@@ -1,7 +1,9 @@
 package com.staylio.backend.Controllers;
 
 import com.staylio.backend.model.Host;
+import com.staylio.backend.model.User;
 import com.staylio.backend.Service.HostService;
+import com.staylio.backend.Service.UserService;
 import com.staylio.backend.Repo.HostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,118 @@ public class AuthController {
     
     @Autowired
     private HostRepository hostRepository;
+    
+    @Autowired
+    private UserService userService;
+    
+    // User Registration
+    @PostMapping("/signup")
+    public ResponseEntity<Map<String, Object>> signupUser(@RequestBody UserSignupRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = userService.registerUser(
+                request.getFirstName(),
+                request.getLastName(),
+                request.getEmail(),
+                request.getPassword(),
+                request.getPhone()
+            );
+            
+            response.put("success", true);
+            response.put("message", "User registered successfully");
+            response.put("user", createUserResponse(user));
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            
+        } catch (RuntimeException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Registration failed. Please try again.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+    
+    // User Login
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody UserLoginRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = userService.authenticateUser(request.getEmail(), request.getPassword());
+            
+            response.put("success", true);
+            response.put("message", "Login successful");
+            response.put("user", createUserResponse(user));
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (RuntimeException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Login failed. Please try again.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+    
+    // Change Password
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, Object>> changePassword(@RequestBody ChangePasswordRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            User user = userService.changePassword(request.getUserId(), request.getOldPassword(), request.getNewPassword());
+            
+            response.put("success", true);
+            response.put("message", "Password changed successfully");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (RuntimeException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Password change failed. Please try again.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+    
+    // Check if email exists
+    @GetMapping("/check-email/{email}")
+    public ResponseEntity<Map<String, Object>> checkEmailExists(@PathVariable String email) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            boolean exists = userService.existsByEmail(email);
+            response.put("exists", exists);
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("error", "Failed to check email");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+    
+    private Map<String, Object> createUserResponse(User user) {
+        Map<String, Object> userResponse = new HashMap<>();
+        userResponse.put("id", user.getId());
+        userResponse.put("firstName", user.getFirstName());
+        userResponse.put("lastName", user.getLastName());
+        userResponse.put("fullName", user.getFullName());
+        userResponse.put("email", user.getEmail());
+        userResponse.put("phone", user.getPhone());
+        userResponse.put("role", "user");
+        userResponse.put("createdAt", user.getCreatedAt());
+        return userResponse;
+    }
     
     // Host Registration
     @PostMapping("/signup-host")
@@ -62,8 +176,8 @@ public class AuthController {
     }
     
     // Host Login
-    @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
+    @PostMapping("/login-host")
+    public ResponseEntity<Map<String, Object>> loginHost(@RequestBody LoginRequest request) {
         Map<String, Object> response = new HashMap<>();
         
         try {
@@ -87,7 +201,7 @@ public class AuthController {
                 case APPROVED:
                     response.put("success", true);
                     response.put("message", "Login successful");
-                    response.put("user", createUserResponse(host));
+                    response.put("user", createHostResponse(host));
                     return ResponseEntity.ok(response);
                     
                 case PENDING_APPROVAL:
@@ -113,7 +227,7 @@ public class AuthController {
         }
     }
     
-    private Map<String, Object> createUserResponse(Host host) {
+    private Map<String, Object> createHostResponse(Host host) {
         Map<String, Object> user = new HashMap<>();
         user.put("id", host.getId());
         user.put("name", host.getOwnerName());
@@ -172,5 +286,58 @@ public class AuthController {
         
         public String getPassword() { return password; }
         public void setPassword(String password) { this.password = password; }
+    }
+    
+    // User Request DTOs
+    public static class UserSignupRequest {
+        private String firstName;
+        private String lastName;
+        private String email;
+        private String password;
+        private String phone;
+        
+        // Getters and Setters
+        public String getFirstName() { return firstName; }
+        public void setFirstName(String firstName) { this.firstName = firstName; }
+        
+        public String getLastName() { return lastName; }
+        public void setLastName(String lastName) { this.lastName = lastName; }
+        
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+        
+        public String getPhone() { return phone; }
+        public void setPhone(String phone) { this.phone = phone; }
+    }
+    
+    public static class UserLoginRequest {
+        private String email;
+        private String password;
+        
+        // Getters and Setters
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
+    
+    public static class ChangePasswordRequest {
+        private Long userId;
+        private String oldPassword;
+        private String newPassword;
+        
+        // Getters and Setters
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
+        
+        public String getOldPassword() { return oldPassword; }
+        public void setOldPassword(String oldPassword) { this.oldPassword = oldPassword; }
+        
+        public String getNewPassword() { return newPassword; }
+        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
     }
 }

@@ -46,7 +46,7 @@ const AuthTestPage = () => {
   const testHostLogin = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8081/api/auth/login', {
+      const response = await fetch('http://localhost:8081/api/auth/login-host', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -71,14 +71,144 @@ const AuthTestPage = () => {
   const testGetPendingHosts = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8081/api/admin/hosts/pending');
-      const hosts = await response.json();
+      // Try admin endpoint first
+      let response = await fetch('http://localhost:8081/api/admin/hosts/pending');
+      let hosts;
       
-      addResult('Get Pending Hosts', true, `Found ${hosts.length} pending hosts`);
+      if (response.ok) {
+        hosts = await response.json();
+        addResult('Get Pending Hosts (Admin)', true, `Found ${hosts.length} pending hosts`);
+      } else {
+        // Try alternative endpoint
+        response = await fetch('http://localhost:8081/api/hosts/pending');
+        if (response.ok) {
+          hosts = await response.json();
+          addResult('Get Pending Hosts (Direct)', true, `Found ${hosts.length} pending hosts`);
+        } else {
+          addResult('Get Pending Hosts', false, `Both endpoints failed. Status: ${response.status}`);
+        }
+      }
     } catch (error) {
       addResult('Get Pending Hosts', false, error.message);
     }
     setLoading(false);
+  };
+
+  const testGetAllHosts = async () => {
+    setLoading(true);
+    try {
+      // Try admin endpoint first
+      let response = await fetch('http://localhost:8081/api/admin/hosts');
+      let hosts;
+      
+      if (response.ok) {
+        hosts = await response.json();
+        addResult('Get All Hosts (Admin)', true, `Found ${hosts.length} total hosts`);
+      } else {
+        // Try alternative endpoint
+        response = await fetch('http://localhost:8081/api/hosts');
+        if (response.ok) {
+          hosts = await response.json();
+          addResult('Get All Hosts (Direct)', true, `Found ${hosts.length} total hosts`);
+        } else {
+          addResult('Get All Hosts', false, `Both endpoints failed. Status: ${response.status}`);
+        }
+      }
+    } catch (error) {
+      addResult('Get All Hosts', false, error.message);
+    }
+    setLoading(false);
+  };
+
+  const testApproveHost = async () => {
+    setLoading(true);
+    try {
+      // First get a pending host
+      const hostsResponse = await fetch('http://localhost:8081/api/hosts/pending');
+      const hosts = await hostsResponse.json();
+      
+      if (hosts.length === 0) {
+        addResult('Approve Host', false, 'No pending hosts found to approve');
+        setLoading(false);
+        return;
+      }
+
+      const hostId = hosts[0].id;
+      const response = await fetch(`http://localhost:8081/api/admin/hosts/${hostId}/approve`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        addResult('Approve Host', true, `Host ${hostId} approved successfully`);
+      } else {
+        addResult('Approve Host', false, result.message);
+      }
+    } catch (error) {
+      addResult('Approve Host', false, error.message);
+    }
+    setLoading(false);
+  };
+
+  const testRejectHost = async () => {
+    setLoading(true);
+    try {
+      // First get a pending host
+      const hostsResponse = await fetch('http://localhost:8081/api/hosts/pending');
+      const hosts = await hostsResponse.json();
+      
+      if (hosts.length === 0) {
+        addResult('Reject Host', false, 'No pending hosts found to reject');
+        setLoading(false);
+        return;
+      }
+
+      const hostId = hosts[0].id;
+      const response = await fetch(`http://localhost:8081/api/admin/hosts/${hostId}/reject`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'Test rejection' })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        addResult('Reject Host', true, `Host ${hostId} rejected successfully`);
+      } else {
+        addResult('Reject Host', false, result.message);
+      }
+    } catch (error) {
+      addResult('Reject Host', false, error.message);
+    }
+    setLoading(false);
+  };
+
+  const testBackendConnection = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:8081/api/hosts');
+      if (response.ok) {
+        addResult('Backend Connection', true, `Backend is running on port 8081`);
+      } else {
+        addResult('Backend Connection', false, `Backend responded with status: ${response.status}`);
+      }
+    } catch (error) {
+      addResult('Backend Connection', false, `Cannot connect to backend: ${error.message}`);
+    }
+    setLoading(false);
+  };
+
+  const runAllTests = async () => {
+    clearResults();
+    await testBackendConnection();
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await testHostRegistration();
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await testGetAllHosts();
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await testGetPendingHosts();
   };
 
   const clearResults = () => {
@@ -97,7 +227,7 @@ const AuthTestPage = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <button
             onClick={testHostRegistration}
             disabled={loading}
@@ -120,6 +250,46 @@ const AuthTestPage = () => {
             className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:opacity-50"
           >
             Test Get Pending Hosts
+          </button>
+
+          <button
+            onClick={testGetAllHosts}
+            disabled={loading}
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+          >
+            Test Get All Hosts
+          </button>
+
+          <button
+            onClick={testApproveHost}
+            disabled={loading}
+            className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 disabled:opacity-50"
+          >
+            Test Approve Host
+          </button>
+
+          <button
+            onClick={testRejectHost}
+            disabled={loading}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50"
+          >
+            Test Reject Host
+          </button>
+
+          <button
+            onClick={testBackendConnection}
+            disabled={loading}
+            className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 disabled:opacity-50"
+          >
+            Test Backend Connection
+          </button>
+
+          <button
+            onClick={runAllTests}
+            disabled={loading}
+            className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 disabled:opacity-50"
+          >
+            Run All Tests
           </button>
         </div>
 
