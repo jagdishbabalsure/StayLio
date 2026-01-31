@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================
+   MAGIC BENTO THEME CONFIGURATION
+   ======================================== */
+
+:root {
+    /* Colors */
+    --background-dark: #060010;
+    --background-card: #0f172a;
+    --primary-purple: #8400ff;
+    --primary-glow: rgba(132, 0, 255, 0.5);
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --border-color: rgba(132, 0, 255, 0.2);
+
+    /* Fonts */
+    --font-heading: 'Geom', sans-serif;
+    --font-body: 'Noto Sans', sans-serif;
+}
+
+@layer base {
+    body {
+        @apply antialiased text-white;
+        background-color: var(--background-dark);
+        font-family: var(--font-body);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-heading);
+        @apply font-bold;
+    }
+}
+
+@layer components {
+
+    /* Magic Bento Card Style */
+    .bento-card {
+        @apply relative overflow-hidden rounded-[20px] border border-white/10 bg-[#0f172a]/50 backdrop-blur-sm transition-all duration-300;
+    }
+
+    .bento-card:hover {
+        @apply border-[#8400ff]/50;
+        box-shadow: 0 0 30px rgba(132, 0, 255, 0.2);
+    }
+
+    /* Buttons */
+    .btn-magic {
+        @apply relative px-6 py-3 rounded-xl font-semibold text-white overflow-hidden transition-all duration-300;
+        background: linear-gradient(45deg, #6366f1, #a855f7, #ec4899);
+        background-size: 200% 200%;
+        animation: gradient-move 4s ease infinite;
+    }
+
+    .btn-magic:hover {
+        @apply scale-105;
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+    }
+
+    .btn-outline-magic {
+        @apply relative px-6 py-3 rounded-xl font-semibold text-white border border-[#8400ff]/50 hover:bg-[#8400ff]/10 transition-all duration-300;
+    }
+
+    /* Inputs */
+    .input-magic {
+        @apply w-full px-4 py-3 bg-[#0f172a]/50 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-[#8400ff] focus:ring-1 focus:ring-[#8400ff] outline-none transition-all duration-300;
+    }
+
+    /* Standard Theme Buttons */
+    .btn-primary {
+        @apply relative px-8 py-4 bg-[#8400ff] rounded-xl font-bold text-white text-lg shadow-lg hover:shadow-[#8400ff]/50 transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-[#7000d6];
+    }
+
+    .btn-secondary {
+        @apply relative px-8 py-4 bg-white/5 border border-white/20 rounded-xl font-bold text-white text-lg backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-[#a855f7]/50 hover:-translate-y-1;
+    }
+
+    .btn-secondary:hover {
+        box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+    }
+}
+
+@keyframes gradient-move {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #060010;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}

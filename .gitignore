@@ -1,0 +1,53 @@
+# --- General ---
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+.history/
+.vscode/
+.idea/
+*.iml
+*.swp
+
+# --- Docker ---
+docker-compose.override.yml
+# Do NOT ignore Dockerfiles or docker-compose.yml
+
+# --- Environment Configuration (CRITICAL for Security) ---
+.env
+.env.*
+!.env.example
+*.env
+
+# --- Frontend (StayLio - React/Node) ---
+staylio/node_modules/
+staylio/dist/
+staylio/build/
+staylio/coverage/
+staylio/.npm/
+staylio/*.local
+staylio/.eslintcache
+
+# --- Backend (StayLio-Backend - Java/Spring Boot) ---
+staylio-backend/target/
+staylio-backend/classes/
+staylio-backend/*.class
+staylio-backend/*.jar
+staylio-backend/*.war
+staylio-backend/*.nar
+staylio-backend/*.ear
+staylio-backend/*.zip
+staylio-backend/*.tar.gz
+staylio-backend/*.rar
+
+# Keep Maven Wrapper for CI/CD
+!staylio-backend/mvnw
+!staylio-backend/mvnw.cmd
+!staylio-backend/.mvn/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
