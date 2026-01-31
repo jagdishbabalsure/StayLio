@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Hello') {
             steps {
-                echo 'Hello from Jenkins'
+                echo 'Hello from Jenkins added port forwarding'
             }
         }
     }
