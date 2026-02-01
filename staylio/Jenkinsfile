@@ -1,11 +1,56 @@
 pipeline {
     agent any
 
+    environment {
+        // Use your Docker Hub username and image name here
+        // Note: Docker Hub repositories are usually lowercase
+        IMAGE_NAME = "jagdishbabalsure/staylio" 
+        IMAGE_TAG = "latest"
+    }
+
     stages {
-        stage('Hello') {
+
+        stage('Try') {
             steps {
-                echo 'Hello from Jenkins'
+                echo "hello i have startyed"
             }
         }
+
+        stage('Checkout Code') {
+            steps {
+                // Checkout the main branch of your current repository
+                git branch: 'main', url: 'https://github.com/jagdishbabalsure/StayLio.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image..."
+                    // Build the image using the Dockerfile in the 'staylio' directory
+                    // Since the context is the root of the checkout, we need to point to the folder
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} staylio"
+                    // Or if using the docker global variable (assuming Docker Pipeline plugin):
+                    // docker.build("${IMAGE_NAME}:${IMAGE_TAG}", "staylio") 
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    echo "Pushing Docker image..."
+                    // You need to configure 'dockerhub-creds' in Jenkins Credentials first
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
+                        docker.image("${IMAGE_NAME}:${IMAGE_TAG}").push()
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success { echo "Docker image successfully built and pushed 🚀" }
+        failure { echo "Pipeline failed ❌" }
     }
 }
