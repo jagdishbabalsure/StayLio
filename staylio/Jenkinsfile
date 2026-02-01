@@ -4,7 +4,7 @@ pipeline {
     environment {
         // Use your Docker Hub username and image name here
         // Note: Docker Hub repositories are usually lowercase
-        IMAGE_NAME = "jagdishbabalsure/staylio" 
+        IMAGE_NAME = "jagdishb84/staylio" 
         IMAGE_TAG = "latest"
     }
 
