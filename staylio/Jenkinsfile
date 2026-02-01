@@ -12,7 +12,7 @@ pipeline {
 
         stage('Try') {
             steps {
-                echo "hello i have startyed"
+                echo "hello i have started trial"
             }
         }
 
