@@ -30,8 +30,6 @@ pipeline {
                     // Build the image using the Dockerfile in the 'staylio' directory
                     // Since the context is the root of the checkout, we need to point to the folder
                     sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} staylio"
-                    // Or if using the docker global variable (assuming Docker Pipeline plugin):
-                    // docker.build("${IMAGE_NAME}:${IMAGE_TAG}", "staylio") 
                 }
             }
         }
